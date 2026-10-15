@@ -1,35 +1,146 @@
-import { useState } from 'react'
-import { ArrowRight, ArrowUpRight, Award, BookOpen, Check, ChevronRight, Flame, LockKeyhole, Play, Plus, Sparkles, Target, Zap } from 'lucide-react'
-import { topics, type Language, type View } from '../data'
+import { Award, BookOpen, Dices, Flame, Play, Sparkles, Wand2 } from 'lucide-react'
+import { useAuth } from '../lib/auth'
+import type { Language, View } from '../data'
 
-type Props = { language: Language; xp: number; completedQuests: string[]; onCompleteQuest: (id: string) => void; onNavigate: (view: View) => void }
-
-export function Dashboard({ language, xp, completedQuests, onCompleteQuest, onNavigate }: Props) {
-  const [selectedDay, setSelectedDay] = useState(4)
-  const isHi = language === 'HI'
-  const quests = [
-    { id: 'visual', title: isHi ? 'Binary search ko visualize karo' : 'Visualize binary search', meta: 'Visual lab • 5 min', reward: '+50 XP', icon: Target },
-    { id: 'problem', title: isHi ? 'Ek array problem solve karo' : 'Solve one array problem', meta: 'Coding arena • 15 min', reward: '+75 XP', icon: Code2Icon },
-    { id: 'review', title: isHi ? 'Apne notes revise karo' : 'Review your notes', meta: 'Revision zone • 10 min', reward: '+30 XP', icon: BookOpen },
-  ]
-  const activity = [36, 52, 42, 68, 49, 82, 60, 72, 48, 94, 65, 78, 56, 88, 70, 48, 73, 62, 90, 58, 76, 45, 84, 65, 97, 54, 76, 62]
-
-  return <div className="dashboard-page page-enter">
-    <section className="welcome-row"><div><div className="eyebrow"><span className="eyebrow-line" /> TUESDAY, OCTOBER 13, 2026 <span className="eyebrow-chip">WEEK 04</span></div><h1>{isHi ? 'Aaj kya unlock karna hai?' : 'Ready to level up, Aarav?'} <span className="wave">✳</span></h1><p>DSA ko decode kar. Apna level upgrade kar.</p></div><button className="button button-primary" onClick={() => onNavigate('learn')}><Play size={15} fill="currentColor" /> Continue learning <ArrowRight size={15} /></button></section>
-    <section className="stat-grid">
-      <article className="stat-card stat-xp"><div className="stat-head"><span>Total XP</span><span className="stat-icon purple"><Zap size={16} fill="currentColor" /></span></div><div className="stat-value">{xp.toLocaleString()}<span> XP</span></div><div className="stat-foot"><span className="trend up"><ArrowUpRight size={14} /> 12.8%</span><span>vs last week</span><div className="mini-bars">{[25, 38, 28, 58, 42, 68, 51, 86, 61].map((v, i) => <i key={i} style={{ height: `${v}%` }} />)}</div></div></article>
-      <article className="stat-card"><div className="stat-head"><span>Current level</span><span className="stat-icon cyan"><Award size={16} /></span></div><div className="stat-value">08<span className="level-name"> Explorer</span></div><div className="level-progress"><div><span>Level 9: Problem solver</span><b>68%</b></div><i><span style={{ width: '68%' }} /></i></div></article>
-      <article className="stat-card"><div className="stat-head"><span>Learning streak</span><span className="stat-icon orange"><Flame size={16} fill="currentColor" /></span></div><div className="stat-value">7<span className="level-name"> days</span></div><div className="week-streak">{['M','T','W','T','F','S','S'].map((day, index) => <span key={index} className={index < 4 ? 'streak-done' : index === 4 ? 'streak-today' : ''}>{index < 4 ? <Check size={11} /> : day}</span>)}<small>4 day best</small></div></article>
-      <article className="stat-card"><div className="stat-head"><span>Topics mastered</span><span className="stat-icon mint"><BookOpen size={16} /></span></div><div className="stat-value">12<span className="level-name"> / 42</span></div><div className="topic-progress-row"><div className="topic-dots"><i /><i /><i /><i /><i /></div><span>28% complete</span></div></article>
-    </section>
-
-    <section className="dashboard-grid"><div className="panel activity-panel"><div className="panel-heading"><div><span className="section-kicker">YOUR MOMENTUM</span><h2>Learning activity</h2></div><button className="select-like" onClick={() => setSelectedDay(selectedDay === 4 ? 3 : 4)}>Last 28 days <ChevronRight size={14} /></button></div><div className="activity-summary"><strong>18.4 <small>hrs</small></strong><span className="trend up"><ArrowUpRight size={14} /> 8.2%</span><span>focused this month</span></div><div className="chart-wrap"><div className="chart-y"><span>4h</span><span>3h</span><span>2h</span><span>1h</span><span>0</span></div><div className="bar-chart">{activity.map((v, i) => <button key={i} aria-label={`Activity day ${i + 1}: ${Math.round(v / 25) / 10} hours`} className={`chart-bar ${i === selectedDay ? 'chart-selected' : ''}`} style={{ height: `${v}%` }} onClick={() => setSelectedDay(i)}><span>{(v / 25).toFixed(1)}h</span></button>)}</div></div><div className="chart-days"><span>SEP 16</span><span>SEP 23</span><span>SEP 30</span><span>OCT 07</span><span>OCT 13</span></div><div className="activity-legend"><span><i className="legend-dot" /> Study time</span><span>Peak day: <b>Oct 9 • 3.8 hrs</b></span></div></div>
-
-      <div className="panel quests-panel"><div className="panel-heading"><div><span className="section-kicker">SMALL WINS, BIG XP</span><h2>Daily quests <span className="quest-count">{completedQuests.length}/3</span></h2></div><button className="icon-text-link" onClick={() => onNavigate('quests')}>All quests <ArrowRight size={14} /></button></div><div className="quest-list">{quests.map(({ id, title, meta, reward, icon: Icon }) => { const done = completedQuests.includes(id); return <div className={`quest-row ${done ? 'quest-completed' : ''}`} key={id}><button className={`quest-check ${done ? 'checked' : ''}`} onClick={() => done ? onNavigate('quests') : id === 'visual' ? onNavigate('visualizer') : id === 'problem' ? onNavigate('arena') : onCompleteQuest(id)} aria-label={done ? 'Quest completed' : `Start ${title}`}>{done ? <Check size={13} /> : <Icon size={14} />}</button><div className="quest-copy"><strong>{title}</strong><span>{meta}</span></div><span className="quest-reward">{done ? 'Done' : reward}</span></div> })}</div><div className="quest-footer"><span><Sparkles size={14} /> Complete all 3 for <b>+100 bonus XP</b></span><button className="text-button" onClick={() => onNavigate('quests')}>View all <ArrowRight size={13} /></button></div></div></section>
-
-    <section className="lower-grid"><div className="panel roadmap-panel"><div className="panel-heading"><div><span className="section-kicker">YOUR ROADMAP</span><h2>Pick up where you left off</h2></div><button className="icon-text-link" onClick={() => onNavigate('learn')}>Full roadmap <ArrowRight size={14} /></button></div><div className="continue-course"><div className="course-art"><span>02</span><div className="course-orbit orbit-one" /><div className="course-orbit orbit-two" /><div className="course-core"><BookOpen size={23} /></div></div><div className="course-info"><div className="course-meta"><span className="level-tag">FOUNDATION</span><span>3 of 8 lessons</span></div><h3>Arrays & strings</h3><p>Build the foundation for almost every coding interview.</p><div className="course-bottom"><div className="progress-track"><span style={{ width: '38%' }} /></div><b>38%</b><button className="course-play" onClick={() => onNavigate('learn')} aria-label="Continue Arrays and strings"><Play size={14} fill="currentColor" /></button></div></div></div><div className="next-topics"><span>NEXT UP</span>{topics.slice(2, 4).map((topic) => <button key={topic.id} onClick={() => onNavigate('learn')}><span className={`topic-unit unit-${topic.color}`}>{topic.unit}</span><span>{topic.title}</span><span>{topic.time}</span><ArrowRight size={14} /></button>)}</div></div>
-      <div className="panel badges-panel"><div className="panel-heading"><div><span className="section-kicker">COLLECTION</span><h2>Recent badges</h2></div><button className="icon-text-link" onClick={() => onNavigate('quests')}>View all <ArrowRight size={14} /></button></div><div className="badge-list"><div className="badge-item"><div className="badge-medal badge-gold"><Zap size={19} fill="currentColor" /></div><div><strong>First Commit</strong><span>Solved your first challenge</span></div><span className="badge-date">OCT 11</span></div><div className="badge-item"><div className="badge-medal badge-blue"><Flame size={19} fill="currentColor" /></div><div><strong>On a roll</strong><span>Learned 5 days in a row</span></div><span className="badge-date">OCT 09</span></div><div className="badge-item locked-badge"><div className="badge-medal badge-locked"><LockKeyhole size={17} /></div><div><strong>Bug hunter</strong><span>Find 10 hidden bugs</span></div><span className="badge-progress">4/10</span></div></div><button className="badge-challenge" onClick={() => onNavigate('quests')}><div><span className="badge-challenge-icon"><Plus size={17} /></span><span><strong>Next unlock: Array ace</strong><small>Master 5 array challenges</small></span></div><ArrowRight size={15} /></button></div></section>
-  </div>
+interface Props {
+  language: Language
+  xp: number
+  completedQuests: string[]
+  onCompleteQuest: (id: string) => void
+  onNavigate: (view: View) => void
 }
 
-function Code2Icon(props: { size?: number }) { return <Target {...props} /> }
+export function Dashboard({ language, xp, onNavigate }: Props) {
+  const isHi = language === 'HI'
+  const auth = useAuth()
+
+  const house = auth.profile?.house || 'Gryffindor'
+  const wizardName = auth.profile?.display_name || 'Aarav'
+
+  const houseCrests: Record<string, string> = {
+    Gryffindor: '🦁',
+    Slytherin: '🐍',
+    Ravenclaw: '🦅',
+    Hufflepuff: '🦡'
+  }
+
+  const houseRanks: Record<string, string> = {
+    Gryffindor: '#4',
+    Ravenclaw: '#2',
+    Slytherin: '#1',
+    Hufflepuff: '#3'
+  }
+
+  const currentCrest = houseCrests[house] || '🦁'
+  const currentRank = houseRanks[house] || '#4'
+
+  return (
+    <div className="page-enter dashboard-container">
+      {/* Top Banner Section */}
+      <div className="dash-header">
+        <div>
+          <div className="dash-eyebrow">
+            <span className="dash-eyebrow-dot" />
+            <span>THE GRAND HALL • ARCANE ACADEMY OF ALGORITHMS</span>
+          </div>
+          <h1 className="dash-title">
+            {isHi ? `Namaste, Wizard ${wizardName}!` : `Welcome back, Wizard ${wizardName}.`}
+          </h1>
+          <p className="dash-sub">
+            {isHi
+              ? 'Aaj ka spell ready hai. Apni wand (code) uthao aur DSA ke secrets unlock karo.'
+              : `Represent House ${house} with honor. Solve your daily runes and advance in the ranks.`}
+          </p>
+        </div>
+
+        {/* Wizard House Stats Badge */}
+        <div className="dash-badges">
+          <div className="dash-badge-item">
+            <span className="dash-badge-label">HOUSE RANK</span>
+            <div className="dash-badge-value gold">
+              <span style={{ fontSize: '15px' }}>{currentCrest}</span> {house} {currentRank}
+            </div>
+          </div>
+          <div className="dash-badge-divider" />
+          <div className="dash-badge-item">
+            <span className="dash-badge-label">MANA XP</span>
+            <div className="dash-badge-value green">
+              <Sparkles size={15} /> {xp} XP
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Mission Incantation Card */}
+      <div className="daily-mission-card">
+        <div className="daily-mission-info">
+          <div className="mission-tag">
+            <Flame size={13} />
+            <span>TODAY'S FORBIDDEN INCANTATION (DAILY MISSION)</span>
+          </div>
+          <h2>{isHi ? 'Day 12: Canteen Ka Order Counter' : 'Canteen Order Frequency Counter'}</h2>
+          <p>
+            {isHi
+              ? 'Level 1 me frequencies count karo aur Level 2 me odd items ko filter karo. Invariance test pass karke extra 50 Mana lo.'
+              : 'Step into the Dueling Arena. Count occurrences, refactor into odd filters, and pass the anti-memorization gate.'}
+          </p>
+        </div>
+        <button className="button button-primary mission-action" onClick={() => onNavigate('arena')}>
+          <Play size={14} fill="currentColor" /> Enter Arena
+        </button>
+      </div>
+
+      {/* Academy Chambers Section */}
+      <div className="chambers-section">
+        <div className="chambers-label">EXPLORE THE ACADEMY CHAMBERS</div>
+
+        <div className="chambers-grid">
+          {/* Card 1: Game Zone */}
+          <div className="chamber-card" onClick={() => onNavigate('gamezone')}>
+            <div className="chamber-top">
+              <div className="chamber-icon green">
+                <Dices size={20} />
+              </div>
+              <span className="chamber-pill green">ACTIVE REALM</span>
+            </div>
+            <h3>The Enchanted Board</h3>
+            <span className="chamber-type">Game Zone</span>
+            <p>
+              Roll the die, climb algorithm ladders, dodge recursion snakes, and collect spell shards across 30 trial tiles.
+            </p>
+          </div>
+
+          {/* Card 2: CryptoZombies Grimoire */}
+          <div className="chamber-card" onClick={() => onNavigate('grimoire')}>
+            <div className="chamber-top">
+              <div className="chamber-icon gold">
+                <BookOpen size={20} />
+              </div>
+              <span className="chamber-pill gold">STEP-BY-STEP</span>
+            </div>
+            <h3>The Spellcraft Grimoire</h3>
+            <span className="chamber-type">Modular Track</span>
+            <p>
+              CryptoZombies-style structured learning. Learn constructors, memory scopes, and filters to forge complete engines.
+            </p>
+          </div>
+
+          {/* Card 3: Arena */}
+          <div className="chamber-card" onClick={() => onNavigate('arena')}>
+            <div className="chamber-top">
+              <div className="chamber-icon amber">
+                <Wand2 size={20} />
+              </div>
+              <span className="chamber-pill amber">FLAGSHIP USP</span>
+            </div>
+            <h3>The Dueling Arena</h3>
+            <span className="chamber-type">Micro-Ladders</span>
+            <p>
+              Continuous ladder refactoring paired with anti-memorization Concept Invariance gates and 3-Tier Socratic hinting.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

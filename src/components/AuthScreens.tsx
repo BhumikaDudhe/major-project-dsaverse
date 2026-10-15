@@ -1,75 +1,405 @@
 import { useState } from 'react'
-import { ArrowRight, BookOpen, Compass, Flame, KeyRound, LockKeyhole, Mail, Sparkles, WandSparkles } from 'lucide-react'
-import { useAuth, type AvatarId, type Language } from '../lib/auth'
+import { AlertCircle, ArrowRight, Compass, KeyRound, Mail, Sparkles, UserCheck } from 'lucide-react'
+import { useAuth } from '../lib/auth'
+
+const HOUSES = [
+  {
+    id: 'Gryffindor',
+    name: 'Gryffindor',
+    trait: 'Brave & Chivalrous',
+    crest: '🦁',
+    color: '#e11d48',
+    avatar: 'scholar'
+  },
+  {
+    id: 'Slytherin',
+    name: 'Slytherin',
+    trait: 'Cunning & Ambitious',
+    crest: '🐍',
+    color: '#10b981',
+    avatar: 'spark'
+  },
+  {
+    id: 'Ravenclaw',
+    name: 'Ravenclaw',
+    trait: 'Wise & Analytical',
+    crest: '🦅',
+    color: '#38bdf8',
+    avatar: 'scholar'
+  },
+  {
+    id: 'Hufflepuff',
+    name: 'Hufflepuff',
+    trait: 'Loyal & Patient',
+    crest: '🦡',
+    color: '#facc15',
+    avatar: 'wayfinder'
+  }
+] as const
 
 export function AuthGateway() {
-  const { hasSupabase, signIn, signUp, startPreview } = useAuth()
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('demo@dsaverse.test')
-  const [password, setPassword] = useState('Demo123!')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const auth = useAuth()
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setBusy(true); setError(''); setNotice('')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setNotice(null)
+    setLoading(true)
+
     try {
-      if (mode === 'signup') {
-        const needsConfirmation = await signUp(email, password, name)
-        if (needsConfirmation) setNotice('Check your inbox to confirm your email, then come back and sign in.')
-      } else await signIn(email, password)
-    } catch (authError) { setError(authError instanceof Error ? authError.message : 'Something went wrong. Try again.') }
-    finally { setBusy(false) }
+      if (mode === 'signin') {
+        const result = await auth.signIn(email, password)
+        if (result.error) {
+          setError(result.error)
+        }
+      } else {
+        const result = await auth.signUp(email, password)
+        if (result.error) {
+          setError(result.error)
+        } else {
+          setNotice('Verification rune sent. Please check your email to activate your spellbook.')
+        }
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication incantation failed.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  return <main className="academy-entry">
-    <div className="entry-backdrop"><i /><i /><i /><div className="entry-glyph">✳</div></div>
-    <header className="entry-brand"><span className="academy-sigil"><Sparkles size={20} /></span><span>DSA<span>verse</span><small>THE ARCANE ACADEMY OF ALGORITHMS</small></span></header>
-    <div className="entry-layout"><section className="entry-story"><span className="story-kicker"><i /> YOUR FIRST SPELL STARTS HERE</span><h1>Master the logic.<br /><em>Unlock the realm.</em></h1><p>Every great coder begins with one curious question. Enter the Academy, find your path, and make algorithms feel like second nature.</p><div className="story-map"><div className="story-orbit orbit-a" /><div className="story-orbit orbit-b" /><div className="story-portal"><Sparkles size={28} /></div><span className="story-star star-one">✦</span><span className="story-star star-two">✧</span><span className="story-star star-three">✦</span><span className="map-caption">LOGIC FOREST <i /> WORLD 01</span></div><div className="story-foot"><span><LockKeyhole size={13} /> Your progress is yours alone</span><span>Built for curious minds</span></div></section>
-      <section className="auth-panel"><div className="auth-panel-head"><span className="auth-icon"><KeyRound size={17} /></span><div><h2>{mode === 'signup' ? 'Create your apprentice account' : 'Demo Login'}</h2><p>{mode === 'signup' ? 'Your own profile. Your own journey.' : 'Use the sample credentials or continue as a guest.'}</p></div></div>
-        <div className="demo-mode-notice"><Sparkles size={15} /><span><strong>DEMO MODE</strong> — data is stored only in this browser.</span></div>
-        {mode === 'login' && <div className="demo-credentials"><span>DEMO CREDENTIALS</span><strong>demo@dsaverse.test</strong><strong>Demo123!</strong></div>}
-        {hasSupabase && <div className="auth-tabs"><button className={mode === 'signup' ? 'auth-tab-active' : ''} onClick={() => { setMode('signup'); setError(''); setNotice('') }}>Create account</button><button className={mode === 'login' ? 'auth-tab-active' : ''} onClick={() => { setMode('login'); setError(''); setNotice('') }}>Sign in</button></div>}
-        <form className="auth-form" onSubmit={submit}>{mode === 'signup' && <label>APPRENTICE NAME<div className="auth-input"><Compass size={15} /><input required maxLength={40} value={name} onChange={(event) => setName(event.target.value)} placeholder="What should we call you?" /></div></label>}<label>EMAIL ADDRESS<div className="auth-input"><Mail size={15} /><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div></label><label>PASSWORD<div className="auth-input"><LockKeyhole size={15} /><input required minLength={8} type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" /></div></label>{error && <p className="auth-feedback auth-error" role="alert">{error}</p>}{notice && <p className="auth-feedback auth-notice" role="status">{notice}</p>}<button className="auth-submit" disabled={busy || (mode === 'signup' && !hasSupabase)}>{busy ? 'Opening the Academy...' : mode === 'signup' ? 'Begin your journey' : 'Demo Login'}<ArrowRight size={16} /></button></form>
-        <div className="auth-divider"><span /> or <span /></div><button className="preview-entry" onClick={() => startPreview('guest')}><Sparkles size={15} /> Continue as Guest <ArrowRight size={14} /></button><p className="preview-boundary">This is a local demo, not real authentication or cloud storage. Your demo and guest progress stay in this browser.</p>
-      </section></div>
-    <footer className="entry-footer"><span>DSAverse <i>•</i> The Arcane Academy of Algorithms</span><span>Logic first. Magic follows.</span></footer>
-  </main>
+  return (
+    <div className="academy-entry" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '24px' }}>
+      <div className="auth-panel" style={{ width: 'min(440px, 100%)', padding: '32px' }}>
+        <div className="brand-lockup" style={{ padding: 0, height: 'auto', marginBottom: '20px' }}>
+          <div className="brand-mark">
+            <Compass size={18} />
+          </div>
+          <div>
+            <span>
+              DSA<span className="brand-accent">verse</span>
+            </span>
+            <small>THE ARCANE ACADEMY OF ALGORITHMS</small>
+          </div>
+        </div>
+
+        <div className="dash-eyebrow" style={{ marginBottom: '8px' }}>
+          <span className="dash-eyebrow-dot" />
+          <span>PORTAL AUTHENTICATION</span>
+        </div>
+
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '22px', fontWeight: 800, margin: '4px 0 16px', color: '#f7f4e9' }}>
+          {mode === 'signin' ? 'Unlock the Spellbook' : 'Enroll in the Academy'}
+        </h1>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          <button
+            type="button"
+            onClick={() => setMode('signin')}
+            style={{
+              flex: 1,
+              height: '34px',
+              borderRadius: '6px',
+              border: `1px solid ${mode === 'signin' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
+              background: mode === 'signin' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
+              color: mode === 'signin' ? '#92e2b0' : '#8fa394',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('signup')}
+            style={{
+              flex: 1,
+              height: '34px',
+              borderRadius: '6px',
+              border: `1px solid ${mode === 'signup' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
+              background: mode === 'signup' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
+              color: mode === 'signup' ? '#92e2b0' : '#8fa394',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Register
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+              WIZARD EMAIL
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Mail size={15} style={{ position: 'absolute', left: '12px', color: '#5c6b61' }} />
+              <input
+                type="email"
+                required
+                placeholder="wizard@arcane.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  padding: '0 12px 0 36px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(188, 222, 196, 0.2)',
+                  background: '#0d1211',
+                  color: '#f7f4e9',
+                  fontFamily: 'Manrope, sans-serif',
+                  fontSize: '12px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+              SECRET CIPHER (PASSWORD)
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <KeyRound size={15} style={{ position: 'absolute', left: '12px', color: '#5c6b61' }} />
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  padding: '0 12px 0 36px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(188, 222, 196, 0.2)',
+                  background: '#0d1211',
+                  color: '#f7f4e9',
+                  fontFamily: 'Manrope, sans-serif',
+                  fontSize: '12px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ padding: '8px 10px', background: 'rgba(216, 141, 116, 0.12)', border: '1px solid rgba(216, 141, 116, 0.3)', borderRadius: '6px', color: '#d88d74', fontSize: '11px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <AlertCircle size={14} /> {error}
+            </div>
+          )}
+
+          {notice && (
+            <div style={{ padding: '8px 10px', background: 'rgba(146, 226, 176, 0.12)', border: '1px solid rgba(146, 226, 176, 0.3)', borderRadius: '6px', color: '#92e2b0', fontSize: '11px' }}>
+              {notice}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="button button-primary"
+            style={{ width: '100%', height: '42px', fontSize: '12px', marginTop: '6px' }}
+          >
+            {loading ? 'Casting Gate Spell...' : mode === 'signin' ? 'Enter Academy Portal' : 'Inscribe Membership'} <ArrowRight size={14} />
+          </button>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0', color: '#5c6b61', fontSize: '10px' }}>
+          <span style={{ flex: 1, height: '1px', background: 'rgba(188, 222, 196, 0.1)' }} />
+          <span>OR</span>
+          <span style={{ flex: 1, height: '1px', background: 'rgba(188, 222, 196, 0.1)' }} />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => auth.enterPreview()}
+          style={{
+            width: '100%',
+            height: '38px',
+            borderRadius: '6px',
+            border: '1px solid rgba(239, 210, 142, 0.3)',
+            background: 'rgba(239, 210, 142, 0.08)',
+            color: '#efd28e',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <Sparkles size={14} /> Enter as Demo Apprentice
+        </button>
+      </div>
+    </div>
+  )
 }
 
-const avatarOptions: { id: AvatarId; label: string; icon: typeof Sparkles }[] = [
-  { id: 'apprentice', label: 'Apprentice', icon: Sparkles },
-  { id: 'scholar', label: 'Scholar', icon: BookOpen },
-  { id: 'wayfinder', label: 'Wayfinder', icon: Compass },
-  { id: 'spark', label: 'Spark', icon: Flame },
-]
-
 export function OnboardingScreen() {
-  const { isPreview, profile, saveOnboarding, user } = useAuth()
-  const [name, setName] = useState(profile?.display_name ?? String(user?.user_metadata.display_name ?? ''))
-  const [language, setLanguage] = useState<Language>(profile?.language ?? 'EN')
-  const [avatar, setAvatar] = useState<AvatarId>(profile?.avatar ?? 'apprentice')
-  const [goal, setGoal] = useState<number | null>(profile?.daily_goal_minutes ?? 25)
-  const [assessment, setAssessment] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const assessmentCorrect = assessment === 'sequence'
+  const auth = useAuth()
+  const [name, setName] = useState(auth.profile?.display_name || '')
+  const [selectedHouse, setSelectedHouse] = useState<string>('Gryffindor')
+  const [language, setLanguage] = useState<'EN' | 'HI'>('EN')
+  const [submitting, setSubmitting] = useState(false)
 
-  const begin = async () => {
-    if (!name.trim()) { setError('Choose a name for your apprentice first.'); return }
-    setBusy(true); setError('')
-    try { await saveOnboarding({ display_name: name.trim(), language, avatar, daily_goal_minutes: goal, assessment_score: assessment === null ? null : Number(assessmentCorrect) }) }
-    catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Could not save your profile.') }
-    finally { setBusy(false) }
+  const handleComplete = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+
+    setSubmitting(true)
+    const houseObj = HOUSES.find((h) => h.id === selectedHouse) || HOUSES[0]
+
+    await auth.updateProfile({
+      display_name: name.trim(),
+      language,
+      avatar: houseObj.avatar,
+      house: houseObj.id,
+      onboarding_complete: true
+    })
+    setSubmitting(false)
   }
 
-  return <main className="academy-entry onboarding-entry"><div className="entry-backdrop"><i /><i /><i /><div className="entry-glyph">✳</div></div><header className="entry-brand"><span className="academy-sigil"><Sparkles size={20} /></span><span>DSA<span>verse</span><small>THE ARCANE ACADEMY OF ALGORITHMS</small></span></header><section className="onboarding-panel"><div className="onboarding-kicker"><span>FIRST STEPS</span><i /> WORLD 01 · LOGIC FOREST</div><h1>{isPreview ? 'Set up your demo apprentice.' : 'Let’s shape your journey.'}</h1><p className="onboarding-subtitle">{isPreview ? 'This profile and progress stay separate from account data.' : 'A few quick choices. You can change these later.'}</p>
-    <label className="onboarding-name">APPRENTICE NAME<input maxLength={40} value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" /></label>
-    <div className="onboarding-section"><span>CHOOSE YOUR AVATAR</span><div className="avatar-options">{avatarOptions.map(({ id, label, icon: Icon }) => <button key={id} className={avatar === id ? 'avatar-option avatar-picked' : 'avatar-option'} onClick={() => setAvatar(id)}><i><Icon size={19} /></i><span>{label}</span></button>)}</div></div>
-    <div className="onboarding-split"><div className="onboarding-section"><span>LEARNING LANGUAGE</span><div className="language-options"><button className={language === 'EN' ? 'language-picked' : ''} onClick={() => setLanguage('EN')}>English</button><button className={language === 'HI' ? 'language-picked' : ''} onClick={() => setLanguage('HI')}>Hinglish</button></div></div><div className="onboarding-section"><span>DAILY GOAL <small>OPTIONAL</small></span><div className="goal-options">{[15, 25, 45].map((value) => <button key={value} className={goal === value ? 'goal-picked' : ''} onClick={() => setGoal(goal === value ? null : value)}>{value}m</button>)}</div></div></div>
-    <details className="assessment"><summary><WandSparkles size={15} /> Optional: take a one-question warm-up <span>skip anytime</span></summary><p>In a sequence of steps, what makes an algorithm stop repeating?</p><div className="assessment-options">{[{ id: 'more', label: 'Add more steps' }, { id: 'sequence', label: 'A condition becomes false' }, { id: 'random', label: 'A random pause' }].map((option) => <button key={option.id} className={assessment === option.id ? 'assessment-picked' : ''} onClick={() => setAssessment(option.id)}>{option.label}</button>)}</div>{assessment !== null && <small>{assessmentCorrect ? 'Exactly. A stopping condition prevents an endless loop.' : 'Not quite. A loop ends when its condition becomes false.'}</small>}</details>
-    {error && <p className="auth-feedback auth-error" role="alert">{error}</p>}<button className="auth-submit onboarding-submit" disabled={busy} onClick={() => void begin()}>{busy ? 'Saving your journey...' : 'Enter Logic Forest'}<ArrowRight size={16} /></button><div className="onboarding-safe"><LockKeyhole size={12} /> {isPreview ? 'Preview only · no account required' : 'Profile and progress are private to your account'}</div>
-  </section><footer className="entry-footer"><span>DSAverse <i>•</i> The Arcane Academy of Algorithms</span><span>Every expert started somewhere.</span></footer></main>
+  return (
+    <div className="academy-entry" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '24px' }}>
+      <div className="auth-panel" style={{ width: 'min(580px, 100%)', padding: '32px' }}>
+        <div className="dash-eyebrow" style={{ marginBottom: '10px' }}>
+          <span className="dash-eyebrow-dot" />
+          <span>THE SORTING CEREMONY • ACADEMY ENROLLMENT</span>
+        </div>
+
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '26px', fontWeight: 800, margin: '4px 0 8px', color: '#f7f4e9' }}>
+          Welcome to the Arcane Academy
+        </h1>
+        <p style={{ color: '#8fa394', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
+          Before taking your seat in the Grand Hall, inscribe your wizard moniker and step forward to be sorted into your House.
+        </p>
+
+        <form onSubmit={handleComplete} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '24px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+              WIZARD MONIKER
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Harry Potter, Hermione Granger..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: '100%',
+                height: '42px',
+                padding: '0 12px',
+                borderRadius: '6px',
+                border: '1px solid rgba(188, 222, 196, 0.2)',
+                background: '#0d1211',
+                color: '#f7f4e9',
+                fontFamily: 'Manrope, sans-serif',
+                fontSize: '13px',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
+              CHOOSE YOUR HOUSE
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              {HOUSES.map((h) => {
+                const isSelected = selectedHouse === h.id
+                return (
+                  <div
+                    key={h.id}
+                    onClick={() => setSelectedHouse(h.id)}
+                    style={{
+                      cursor: 'pointer',
+                      padding: '12px 14px',
+                      borderRadius: '8px',
+                      border: `1px solid ${isSelected ? h.color : 'rgba(188, 222, 196, 0.14)'}`,
+                      background: isSelected ? `${h.color}15` : '#141c19',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      transition: '0.2s'
+                    }}
+                  >
+                    <span style={{ fontSize: '24px' }}>{h.crest}</span>
+                    <div>
+                      <strong style={{ display: 'block', color: isSelected ? '#f7f4e9' : '#cfd8d2', fontSize: '13px' }}>
+                        {h.name}
+                      </strong>
+                      <span style={{ display: 'block', color: isSelected ? h.color : '#798a7e', fontSize: '10px' }}>
+                        {h.trait}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
+              PREFERRED DIALECT (LANGUAGE)
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setLanguage('EN')}
+                style={{
+                  flex: 1,
+                  height: '36px',
+                  borderRadius: '6px',
+                  border: `1px solid ${language === 'EN' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
+                  background: language === 'EN' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
+                  color: language === 'EN' ? '#92e2b0' : '#8fa394',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('HI')}
+                style={{
+                  flex: 1,
+                  height: '36px',
+                  borderRadius: '6px',
+                  border: `1px solid ${language === 'HI' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
+                  background: language === 'HI' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
+                  color: language === 'HI' ? '#92e2b0' : '#8fa394',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                हिंदी (Hinglish)
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || !name.trim()}
+            className="button button-primary"
+            style={{ width: '100%', height: '44px', fontSize: '12px', marginTop: '8px' }}
+          >
+            {submitting ? 'Sorting into House...' : 'Don the Sorting Hat & Enter Academy'} <ArrowRight size={15} />
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 }
