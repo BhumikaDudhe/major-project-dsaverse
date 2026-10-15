@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertCircle, ArrowRight, Compass, KeyRound, Mail, Sparkles, UserCheck } from 'lucide-react'
+import { AlertCircle, ArrowRight, Compass, KeyRound, Mail, Sparkles } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
 const HOUSES = [
@@ -38,7 +38,7 @@ const HOUSES = [
 ] as const
 
 export function AuthGateway() {
-  const auth = useAuth()
+  const auth = useAuth() as any
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -55,12 +55,16 @@ export function AuthGateway() {
     try {
       if (mode === 'signin') {
         const result = await auth.signIn(email, password)
-        if (result.error) {
+        if (result && typeof result === 'object' && 'error' in result && result.error) {
           setError(result.error)
         }
       } else {
-        const result = await auth.signUp(email, password)
-        if (result.error) {
+        const result =
+          typeof auth.signUp === 'function' && auth.signUp.length >= 3
+            ? await auth.signUp(email, password, 'Apprentice Wizard')
+            : await auth.signUp(email, password)
+
+        if (result && typeof result === 'object' && 'error' in result && result.error) {
           setError(result.error)
         } else {
           setNotice('Verification rune sent. Please check your email to activate your spellbook.')
@@ -221,7 +225,11 @@ export function AuthGateway() {
 
         <button
           type="button"
-          onClick={() => auth.enterPreview()}
+          onClick={() => {
+            if (typeof auth.enterPreview === 'function') {
+              auth.enterPreview()
+            }
+          }}
           style={{
             width: '100%',
             height: '38px',
@@ -246,7 +254,7 @@ export function AuthGateway() {
 }
 
 export function OnboardingScreen() {
-  const auth = useAuth()
+  const auth = useAuth() as any
   const [name, setName] = useState(auth.profile?.display_name || '')
   const [selectedHouse, setSelectedHouse] = useState<string>('Gryffindor')
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN')
@@ -259,13 +267,15 @@ export function OnboardingScreen() {
     setSubmitting(true)
     const houseObj = HOUSES.find((h) => h.id === selectedHouse) || HOUSES[0]
 
-    await auth.updateProfile({
-      display_name: name.trim(),
-      language,
-      avatar: houseObj.avatar,
-      house: houseObj.id,
-      onboarding_complete: true
-    })
+    if (typeof auth.updateProfile === 'function') {
+      await auth.updateProfile({
+        display_name: name.trim(),
+        language,
+        avatar: houseObj.avatar,
+        house: houseObj.id,
+        onboarding_complete: true
+      })
+    }
     setSubmitting(false)
   }
 

@@ -4,7 +4,6 @@ import {
   ChevronRight,
   Code2,
   Database,
-  FastForward,
   Info,
   Pause,
   Play,
@@ -399,7 +398,7 @@ export function Visualizer({
   const currentFrame = currentMod.frames[frameIdx]
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: ReturnType<typeof setInterval>
     if (isPlaying) {
       timer = setInterval(() => {
         setFrameIdx((prev) => {
@@ -439,7 +438,6 @@ export function Visualizer({
 
   return (
     <div className="page-enter visualizer-page-container">
-      {/* Header */}
       <div className="page-heading-row" style={{ marginBottom: '16px' }}>
         <div>
           <div className="eyebrow">
@@ -458,9 +456,7 @@ export function Visualizer({
         </div>
       </div>
 
-      {/* Main Grid: Left Selector, Right Multi-pane Inspector */}
       <div className="visualizer-engine-grid">
-        {/* Left Side: Topic Selector */}
         <div className="ds-selector-panel">
           <span className="ds-panel-label">DATA STRUCTURE RUNTIMES</span>
           {(Object.keys(modules) as DSKey[]).map((key) => {
@@ -483,9 +479,7 @@ export function Visualizer({
           })}
         </div>
 
-        {/* Right Side: Interactive Memory Studio */}
         <div className="memory-studio">
-          {/* Top Control Bar */}
           <div className="studio-topbar">
             <div className="studio-title-badge">
               <span className="live-pulse" />
@@ -518,9 +512,7 @@ export function Visualizer({
             </div>
           </div>
 
-          {/* Canvas: Node & Pointer Rendering */}
           <div className="visual-memory-canvas">
-            {/* LINKED LIST VIEW */}
             {selectedDS === 'linkedlist' && (
               <div className="ll-container">
                 {currentFrame.visualNodes.length === 0 ? (
@@ -563,7 +555,6 @@ export function Visualizer({
               </div>
             )}
 
-            {/* STACK VIEW */}
             {selectedDS === 'stack' && (
               <div className="stack-container">
                 <div className="stack-cylinder">
@@ -584,7 +575,6 @@ export function Visualizer({
               </div>
             )}
 
-            {/* QUEUE VIEW */}
             {selectedDS === 'queue' && (
               <div className="queue-container">
                 <div className="queue-pipeline">
@@ -605,7 +595,6 @@ export function Visualizer({
               </div>
             )}
 
-            {/* BINARY TREE VIEW */}
             {selectedDS === 'binarytree' && (
               <div className="tree-container">
                 {currentFrame.visualNodes.length > 0 && (
@@ -642,9 +631,7 @@ export function Visualizer({
             )}
           </div>
 
-          {/* Bottom Dual Studio: Code Execution on Left, Memory Register on Right */}
           <div className="studio-bottom-grid">
-            {/* Active Code Execution */}
             <div className="code-sync-box">
               <div className="box-header">
                 <Code2 size={13} color="#92e2b0" />
@@ -664,7 +651,6 @@ export function Visualizer({
               </div>
             </div>
 
-            {/* Memory & Pointer Register */}
             <div className="memory-register-box">
               <div className="box-header">
                 <Database size={13} color="#eed889" />

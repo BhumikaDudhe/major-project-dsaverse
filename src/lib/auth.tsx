@@ -1,189 +1,168 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Session, User } from '@supabase/supabase-js'
-import { supabase } from './supabase'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
 export type Language = 'EN' | 'HI'
-export type AvatarId = 'apprentice' | 'scholar' | 'wayfinder' | 'spark'
-export type Profile = {
+export type AvatarId = 'scholar' | 'spark' | 'wayfinder' | 'alchemist' | string
+export type House = 'Gryffindor' | 'Ravenclaw' | 'Slytherin' | 'Hufflepuff'
+
+export interface Profile {
   id: string
   display_name: string
-  language: Language
   avatar: AvatarId
-  daily_goal_minutes: number | null
+  language: Language
+  goal: string
   onboarding_complete: boolean
-  assessment_score: number | null
+  assessment_score: number
+  house?: House | string
 }
 
-type OnboardingInput = Pick<Profile, 'display_name' | 'language' | 'avatar' | 'daily_goal_minutes' | 'assessment_score'>
-type LocalMode = 'demo' | 'guest'
-type AuthValue = {
-  user: User | null
+export interface AuthValue {
+  user: any
   profile: Profile | null
   loading: boolean
   isPreview: boolean
-  hasSupabase: boolean
-  authError: string | null
-  clearAuthError: () => void
-  signUp: (email: string, password: string, displayName: string) => Promise<boolean>
-  signIn: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ error?: string } | void>
+  signUp: (email: string, password: string, name?: string) => Promise<{ error?: string } | boolean | void>
   signOut: () => Promise<void>
-  startPreview: (mode?: LocalMode) => void
+  enterPreview: () => void
   exitPreview: () => void
-  saveOnboarding: (input: OnboardingInput) => Promise<void>
-  setLanguage: (language: Language) => Promise<void>
+  setLanguage: (lang: Language) => Promise<void>
+  updateProfile: (updates: Partial<Profile>) => Promise<void>
 }
 
-const PREVIEW_KEY = 'dsaverse.local.active.v1'
-const PREVIEW_PROFILE_KEY = 'dsaverse.local.profile.v1'
-const DEMO_EMAIL = 'demo@dsaverse.test'
-const DEMO_PASSWORD = 'Demo123!'
 const AuthContext = createContext<AuthValue | null>(null)
 
-function readActiveMode(): LocalMode | null {
-  const mode = localStorage.getItem(PREVIEW_KEY)
-  return mode === 'demo' || mode === 'guest' ? mode : null
-}
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isPreview, setIsPreview] = useState<boolean>(() => {
+    return localStorage.getItem('dsaverse_is_preview') === 'true'
+  })
 
-function readPreviewProfile(mode: LocalMode | null): Profile | null {
-  if (!mode) return null
-  try {
-    const raw = localStorage.getItem(`${PREVIEW_PROFILE_KEY}.${mode}`)
-    return raw ? JSON.parse(raw) as Profile : null
-  } catch { return null }
-}
+  const [profile, setProfile] = useState<Profile | null>(() => {
+    const saved = localStorage.getItem('dsaverse_profile')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return null
+      }
+    }
+    return {
+      id: 'demo-wizard',
+      display_name: 'Aarav Mehta',
+      avatar: 'scholar',
+      language: 'EN',
+      goal: 'DSA Mastery',
+      onboarding_complete: true,
+      assessment_score: 100,
+      house: 'Gryffindor'
+    }
+  })
 
-function createLocalProfile(mode: LocalMode): Profile {
-  return { id: mode, display_name: mode === 'demo' ? 'Demo Apprentice' : 'Guest Explorer', language: 'EN', avatar: 'apprentice', daily_goal_minutes: 25, onboarding_complete: true, assessment_score: null }
-}
-
-async function readProfile(userId: string): Promise<Profile | null> {
-  if (!supabase) return null
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-  if (error) throw error
-  return data as Profile | null
-}
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [localMode, setLocalMode] = useState<LocalMode | null>(readActiveMode)
-  const [isPreview, setIsPreview] = useState(() => readActiveMode() !== null)
-  const [previewProfile, setPreviewProfile] = useState<Profile | null>(() => readPreviewProfile(readActiveMode()))
-  const [authError, setAuthError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (readActiveMode()) {
-      setLoading(false)
-      return
+    if (profile) {
+      localStorage.setItem('dsaverse_profile', JSON.stringify(profile))
+    } else {
+      localStorage.removeItem('dsaverse_profile')
     }
-    if (!supabase) {
-      setLoading(false)
-      return
+  }, [profile])
+
+  useEffect(() => {
+    localStorage.setItem('dsaverse_is_preview', String(isPreview))
+  }, [isPreview])
+
+  const signIn = async (email: string, _pass: string) => {
+    setLoading(true)
+    setIsPreview(false)
+    const namePart = email.split('@')[0] || 'Apprentice'
+    const newProfile: Profile = {
+      id: 'user_' + Date.now(),
+      display_name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      avatar: 'scholar',
+      language: 'EN',
+      goal: 'DSA Mastery',
+      onboarding_complete: false,
+      assessment_score: 0,
+      house: 'Gryffindor'
     }
+    setProfile(newProfile)
+    setLoading(false)
+  }
 
-    let active = true
-    void supabase.auth.getSession().then(async ({ data, error }) => {
-      if (!active) return
-      if (error) setAuthError(error.message)
-      setSession(data.session)
-      if (data.session?.user) {
-        try { setProfile(await readProfile(data.session.user.id)) }
-        catch (profileError) { setAuthError(profileError instanceof Error ? profileError.message : 'Could not load your profile.') }
-      }
-      setLoading(false)
+  const signUp = async (email: string, _pass: string, name?: string) => {
+    setLoading(true)
+    setIsPreview(false)
+    const newProfile: Profile = {
+      id: 'user_' + Date.now(),
+      display_name: name || email.split('@')[0] || 'Apprentice',
+      avatar: 'scholar',
+      language: 'EN',
+      goal: 'DSA Mastery',
+      onboarding_complete: false,
+      assessment_score: 0,
+      house: 'Gryffindor'
+    }
+    setProfile(newProfile)
+    setLoading(false)
+  }
+
+  const signOut = async () => {
+    setIsPreview(false)
+    setProfile(null)
+  }
+
+  const enterPreview = () => {
+    setIsPreview(true)
+    setProfile({
+      id: 'preview-apprentice',
+      display_name: 'Demo Apprentice',
+      avatar: 'scholar',
+      language: 'EN',
+      goal: 'DSA Mastery',
+      onboarding_complete: true,
+      assessment_score: 100,
+      house: 'Gryffindor'
     })
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession)
-      if (!nextSession) { setProfile(null); setLoading(false); return }
-      sessionStorage.removeItem(PREVIEW_KEY)
-      setIsPreview(false)
-      window.setTimeout(() => {
-        void readProfile(nextSession.user.id).then(setProfile).catch((error: unknown) => {
-          setAuthError(error instanceof Error ? error.message : 'Could not load your profile.')
-        }).finally(() => setLoading(false))
-      }, 0)
-    })
+  const exitPreview = () => {
+    setIsPreview(false)
+    setProfile(null)
+  }
 
-    return () => { active = false; subscription.unsubscribe() }
-  }, [])
+  const setLanguage = async (lang: Language): Promise<void> => {
+    setProfile((prev) => (prev ? { ...prev, language: lang } : null))
+  }
 
-  const value = useMemo<AuthValue>(() => ({
-    user: localMode ? null : session?.user ?? null,
-    profile: localMode ? previewProfile : profile,
-    loading,
-    isPreview,
-    hasSupabase: supabase !== null,
-    authError,
-    clearAuthError: () => setAuthError(null),
-    signUp: async (email, password, displayName) => {
-      if (!supabase) throw new Error('Demo Login needs demo@dsaverse.test and Demo123!. Or choose Continue as Guest.')
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName, avatar: 'apprentice' } } })
-      if (error) throw error
-      return data.session === null
-    },
-    signIn: async (email, password) => {
-      if (email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD) {
-        const mode: LocalMode = 'demo'
-        const savedProfile = readPreviewProfile(mode)
-        const localProfile = savedProfile ?? createLocalProfile(mode)
-        localStorage.setItem(PREVIEW_KEY, mode)
-        if (!savedProfile) localStorage.setItem(`${PREVIEW_PROFILE_KEY}.${mode}`, JSON.stringify(localProfile))
-        setLocalMode(mode); setPreviewProfile(localProfile); setIsPreview(true); setAuthError(null)
-        return
-      }
-      if (!supabase) throw new Error('Use demo@dsaverse.test with Demo123!, or choose Continue as Guest.')
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-    },
-    signOut: async () => {
-      if (!supabase) return
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-    },
-    startPreview: (mode = 'guest') => {
-      const savedProfile = readPreviewProfile(mode)
-      const localProfile = savedProfile ?? createLocalProfile(mode)
-      localStorage.setItem(PREVIEW_KEY, mode)
-      if (!savedProfile) localStorage.setItem(`${PREVIEW_PROFILE_KEY}.${mode}`, JSON.stringify(localProfile))
-      setLocalMode(mode); setPreviewProfile(localProfile); setIsPreview(true); setAuthError(null)
-    },
-    exitPreview: () => { localStorage.removeItem(PREVIEW_KEY); setLocalMode(null); setPreviewProfile(null); setIsPreview(false) },
-    saveOnboarding: async (input) => {
-      if (isPreview) {
-        const preview = { id: 'preview', ...input, onboarding_complete: true }
-        localStorage.setItem(`${PREVIEW_PROFILE_KEY}.${localMode ?? 'guest'}`, JSON.stringify({ ...preview, id: localMode ?? 'guest' }))
-        setPreviewProfile(preview)
-        return
-      }
-      if (!supabase || !session?.user) throw new Error('Your authenticated session is missing. Please sign in again.')
-      const { data, error } = await supabase.from('profiles').upsert({ id: session.user.id, ...input, onboarding_complete: true }).select('*').single()
-      if (error) throw error
-      setProfile(data as Profile)
-    },
-    setLanguage: async (language) => {
-      if (isPreview) {
-        setPreviewProfile((current) => {
-          if (!current) return current
-          const updated = { ...current, language }
-          localStorage.setItem(`${PREVIEW_PROFILE_KEY}.${localMode ?? 'guest'}`, JSON.stringify(updated))
-          return updated
-        })
-        return
-      }
-      if (!supabase || !session?.user) return
-      const { data, error } = await supabase.from('profiles').update({ language }).eq('id', session.user.id).select('*').single()
-      if (error) throw error
-      setProfile(data as Profile)
-    },
-  }), [session, profile, loading, isPreview, previewProfile, authError, localMode])
+  const updateProfile = async (updates: Partial<Profile>) => {
+    setProfile((prev) => (prev ? { ...prev, ...updates } : null))
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user: profile ? { id: profile.id } : null,
+        profile,
+        loading,
+        isPreview,
+        signIn,
+        signUp,
+        signOut,
+        enterPreview,
+        exitPreview,
+        setLanguage,
+        updateProfile
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used inside AuthProvider')
-  return context
+export function useAuth(): AuthValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return ctx
 }

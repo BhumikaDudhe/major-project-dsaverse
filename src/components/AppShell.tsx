@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Award,
   Bell,
   BookOpen,
   Calendar,
@@ -80,7 +79,7 @@ export function AppShell({
 
   return (
     <div className="app-layout">
-      {/* Desktop & Mobile Sidebar */}
+      {/* Sidebar */}
       <aside className={`sidebar desktop-sidebar ${mobileOpen ? 'mobile-sidebar' : ''}`}>
         <div className="brand-lockup">
           <div className="brand-mark">
@@ -144,7 +143,6 @@ export function AppShell({
         </nav>
 
         <div className="sidebar-bottom" style={{ position: 'relative' }}>
-          {/* Streak Card */}
           <div className="streak-card">
             <div className="streak-icon">
               <Flame size={15} />
@@ -161,7 +159,7 @@ export function AppShell({
             <span>Help & mentor</span>
           </button>
 
-          {/* Profile Dropdown Popover */}
+          {/* Profile Dropdown */}
           {profileMenuOpen && (
             <div
               style={{
@@ -254,7 +252,6 @@ export function AppShell({
 
       {/* Main Workspace Column */}
       <div className="main-column">
-        {/* Top Header Bar */}
         <header className="topbar">
           <div className="topbar-title">
             <button className="mobile-menu" onClick={() => setMobileOpen(true)}>
@@ -290,7 +287,6 @@ export function AppShell({
           </div>
         </header>
 
-        {/* Clean Demo Mode Banner (Without Bare Log Out button) */}
         {demoMode && (
           <div className="preview-ribbon">
             <Sparkles size={13} />
@@ -298,7 +294,6 @@ export function AppShell({
           </div>
         )}
 
-        {/* Page Content */}
         <main className="page-content">{children}</main>
 
         <footer className="app-footer">

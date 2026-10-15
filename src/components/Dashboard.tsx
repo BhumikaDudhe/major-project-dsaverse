@@ -1,4 +1,4 @@
-import { Award, BookOpen, Dices, Flame, Play, Sparkles, Wand2 } from 'lucide-react'
+import { BookOpen, Dices, Flame, Play, Sparkles, Wand2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import type { Language, View } from '../data'
 
@@ -14,7 +14,7 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
   const isHi = language === 'HI'
   const auth = useAuth()
 
-  const house = auth.profile?.house || 'Gryffindor'
+  const house = (auth.profile as any)?.house || 'Gryffindor'
   const wizardName = auth.profile?.display_name || 'Aarav'
 
   const houseCrests: Record<string, string> = {
@@ -36,7 +36,6 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
 
   return (
     <div className="page-enter dashboard-container">
-      {/* Top Banner Section */}
       <div className="dash-header">
         <div>
           <div className="dash-eyebrow">
@@ -53,7 +52,6 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
           </p>
         </div>
 
-        {/* Wizard House Stats Badge */}
         <div className="dash-badges">
           <div className="dash-badge-item">
             <span className="dash-badge-label">HOUSE RANK</span>
@@ -71,7 +69,6 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Daily Mission Incantation Card */}
       <div className="daily-mission-card">
         <div className="daily-mission-info">
           <div className="mission-tag">
@@ -90,12 +87,10 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Academy Chambers Section */}
       <div className="chambers-section">
         <div className="chambers-label">EXPLORE THE ACADEMY CHAMBERS</div>
 
         <div className="chambers-grid">
-          {/* Card 1: Game Zone */}
           <div className="chamber-card" onClick={() => onNavigate('gamezone')}>
             <div className="chamber-top">
               <div className="chamber-icon green">
@@ -110,7 +105,6 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
             </p>
           </div>
 
-          {/* Card 2: CryptoZombies Grimoire */}
           <div className="chamber-card" onClick={() => onNavigate('grimoire')}>
             <div className="chamber-top">
               <div className="chamber-icon gold">
@@ -125,7 +119,6 @@ export function Dashboard({ language, xp, onNavigate }: Props) {
             </p>
           </div>
 
-          {/* Card 3: Arena */}
           <div className="chamber-card" onClick={() => onNavigate('arena')}>
             <div className="chamber-top">
               <div className="chamber-icon amber">
