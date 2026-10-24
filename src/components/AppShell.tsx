@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Bell,
   BookOpen,
@@ -19,8 +18,9 @@ import {
   Trophy,
   X
 } from 'lucide-react'
-import { useAuth } from '../lib/auth'
+import { useEffect, useState } from 'react'
 import type { Language, View } from '../data'
+import { useAuth } from '../lib/auth'
 
 interface AppShellProps {
   view: View
@@ -48,8 +48,8 @@ export function AppShell({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const auth = useAuth()
 
-  const userHouse = auth.profile?.house || 'Gryffindor'
-  const userDisplayName = auth.profile?.display_name || 'Aarav Mehta'
+  const userHouse = auth.profile?.house || 'Slytherin'
+  const userDisplayName = auth.profile?.display_name || 'Wizard Apprentice'
 
   const getHouseCrest = (house: string) => {
     switch (house) {
@@ -77,8 +77,14 @@ export function AppShell({
   const learningItems = navItems.filter((i) => i.group === 'LEARNING')
   const practiceItems = navItems.filter((i) => i.group === 'PRACTICE')
 
+  useEffect(() => {
+    const houseKey = userHouse.toLowerCase()
+    document.documentElement.setAttribute('data-house', houseKey)
+    document.body.setAttribute('data-house', houseKey)
+  }, [userHouse])
+
   return (
-    <div className="app-layout">
+    <div className="app-layout" data-house={userHouse.toLowerCase()}>
       {/* Sidebar */}
       <aside className={`sidebar desktop-sidebar ${mobileOpen ? 'mobile-sidebar' : ''}`}>
         <div className="brand-lockup">
@@ -167,8 +173,8 @@ export function AppShell({
                 bottom: '58px',
                 left: '2px',
                 right: '2px',
-                background: '#141c19',
-                border: '1px solid rgba(188, 222, 196, 0.2)',
+                background: 'var(--bg-surface-elevated)',
+                border: '1px solid var(--border-medium)',
                 borderRadius: '8px',
                 padding: '10px',
                 boxShadow: '0 12px 32px rgba(0, 0, 0, 0.6)',
@@ -184,13 +190,13 @@ export function AppShell({
                   alignItems: 'center',
                   gap: '10px',
                   paddingBottom: '8px',
-                  borderBottom: '1px solid rgba(188, 222, 196, 0.12)'
+                  borderBottom: '1px solid var(--border-subtle)'
                 }}
               >
                 <span style={{ fontSize: '20px' }}>{getHouseCrest(userHouse)}</span>
                 <div>
-                  <strong style={{ fontSize: '11px', color: '#f7f4e9', display: 'block' }}>{userDisplayName}</strong>
-                  <span style={{ fontSize: '9px', color: '#efd28e', fontFamily: 'var(--mono)' }}>
+                  <strong style={{ fontSize: '11px', color: 'var(--text-main)', display: 'block' }}>{userDisplayName}</strong>
+                  <span style={{ fontSize: '9px', color: 'var(--accent-rune)', fontFamily: 'var(--mono)' }}>
                     House {userHouse}
                   </span>
                 </div>

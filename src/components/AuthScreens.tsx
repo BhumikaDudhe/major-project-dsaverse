@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, ArrowRight, Compass, KeyRound, Mail, Sparkles } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
@@ -8,7 +8,7 @@ const HOUSES = [
     name: 'Gryffindor',
     trait: 'Brave & Chivalrous',
     crest: '🦁',
-    color: '#e11d48',
+    color: '#f87171',
     avatar: 'scholar'
   },
   {
@@ -16,7 +16,7 @@ const HOUSES = [
     name: 'Slytherin',
     trait: 'Cunning & Ambitious',
     crest: '🐍',
-    color: '#10b981',
+    color: '#92e2b0',
     avatar: 'spark'
   },
   {
@@ -24,7 +24,7 @@ const HOUSES = [
     name: 'Ravenclaw',
     trait: 'Wise & Analytical',
     crest: '🦅',
-    color: '#38bdf8',
+    color: '#60a5fa',
     avatar: 'scholar'
   },
   {
@@ -97,7 +97,7 @@ export function AuthGateway() {
           <span>PORTAL AUTHENTICATION</span>
         </div>
 
-        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '22px', fontWeight: 800, margin: '4px 0 16px', color: '#f7f4e9' }}>
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '22px', fontWeight: 800, margin: '4px 0 16px', color: 'var(--text-main)' }}>
           {mode === 'signin' ? 'Unlock the Spellbook' : 'Enroll in the Academy'}
         </h1>
 
@@ -109,9 +109,9 @@ export function AuthGateway() {
               flex: 1,
               height: '34px',
               borderRadius: '6px',
-              border: `1px solid ${mode === 'signin' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
-              background: mode === 'signin' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
-              color: mode === 'signin' ? '#92e2b0' : '#8fa394',
+              border: `1px solid ${mode === 'signin' ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+              background: mode === 'signin' ? 'var(--accent-primary-dim)' : 'var(--bg-surface-elevated)',
+              color: mode === 'signin' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontSize: '11px',
               fontWeight: 600,
               cursor: 'pointer'
@@ -126,9 +126,9 @@ export function AuthGateway() {
               flex: 1,
               height: '34px',
               borderRadius: '6px',
-              border: `1px solid ${mode === 'signup' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
-              background: mode === 'signup' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
-              color: mode === 'signup' ? '#92e2b0' : '#8fa394',
+              border: `1px solid ${mode === 'signup' ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+              background: mode === 'signup' ? 'var(--accent-primary-dim)' : 'var(--bg-surface-elevated)',
+              color: mode === 'signup' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontSize: '11px',
               fontWeight: 600,
               cursor: 'pointer'
@@ -140,11 +140,11 @@ export function AuthGateway() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
-            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
               WIZARD EMAIL
             </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Mail size={15} style={{ position: 'absolute', left: '12px', color: '#5c6b61' }} />
+              <Mail size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-dim)' }} />
               <input
                 type="email"
                 required
@@ -156,9 +156,9 @@ export function AuthGateway() {
                   height: '40px',
                   padding: '0 12px 0 36px',
                   borderRadius: '6px',
-                  border: '1px solid rgba(188, 222, 196, 0.2)',
-                  background: '#0d1211',
-                  color: '#f7f4e9',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-editor)',
+                  color: 'var(--text-main)',
                   fontFamily: 'Manrope, sans-serif',
                   fontSize: '12px',
                   outline: 'none'
@@ -168,11 +168,11 @@ export function AuthGateway() {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.8px', marginBottom: '6px' }}>
               SECRET CIPHER (PASSWORD)
             </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <KeyRound size={15} style={{ position: 'absolute', left: '12px', color: '#5c6b61' }} />
+              <KeyRound size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-dim)' }} />
               <input
                 type="password"
                 required
@@ -184,9 +184,9 @@ export function AuthGateway() {
                   height: '40px',
                   padding: '0 12px 0 36px',
                   borderRadius: '6px',
-                  border: '1px solid rgba(188, 222, 196, 0.2)',
-                  background: '#0d1211',
-                  color: '#f7f4e9',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-editor)',
+                  color: 'var(--text-main)',
                   fontFamily: 'Manrope, sans-serif',
                   fontSize: '12px',
                   outline: 'none'
@@ -202,7 +202,7 @@ export function AuthGateway() {
           )}
 
           {notice && (
-            <div style={{ padding: '8px 10px', background: 'rgba(146, 226, 176, 0.12)', border: '1px solid rgba(146, 226, 176, 0.3)', borderRadius: '6px', color: '#92e2b0', fontSize: '11px' }}>
+            <div style={{ padding: '8px 10px', background: 'var(--accent-primary-dim)', border: '1px solid var(--border-medium)', borderRadius: '6px', color: 'var(--accent-primary)', fontSize: '11px' }}>
               {notice}
             </div>
           )}
@@ -217,10 +217,10 @@ export function AuthGateway() {
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0', color: '#5c6b61', fontSize: '10px' }}>
-          <span style={{ flex: 1, height: '1px', background: 'rgba(188, 222, 196, 0.1)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0', color: 'var(--text-dim)', fontSize: '10px' }}>
+          <span style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
           <span>OR</span>
-          <span style={{ flex: 1, height: '1px', background: 'rgba(188, 222, 196, 0.1)' }} />
+          <span style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
         </div>
 
         <button
@@ -234,9 +234,9 @@ export function AuthGateway() {
             width: '100%',
             height: '38px',
             borderRadius: '6px',
-            border: '1px solid rgba(239, 210, 142, 0.3)',
-            background: 'rgba(239, 210, 142, 0.08)',
-            color: '#efd28e',
+            border: '1px solid var(--border-medium)',
+            background: 'var(--accent-rune-dim)',
+            color: 'var(--accent-rune)',
             fontSize: '11px',
             fontWeight: 700,
             cursor: 'pointer',
@@ -260,6 +260,13 @@ export function OnboardingScreen() {
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN')
   const [submitting, setSubmitting] = useState(false)
 
+  // Live-sync document theme whenever the user clicks a house in the Sorting Ceremony
+  useEffect(() => {
+    const houseKey = selectedHouse.toLowerCase()
+    document.documentElement.setAttribute('data-house', houseKey)
+    document.body.setAttribute('data-house', houseKey)
+  }, [selectedHouse])
+
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
@@ -280,23 +287,27 @@ export function OnboardingScreen() {
   }
 
   return (
-    <div className="academy-entry" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '24px' }}>
+    <div
+      className="academy-entry"
+      data-house={selectedHouse.toLowerCase()}
+      style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '24px' }}
+    >
       <div className="auth-panel" style={{ width: 'min(580px, 100%)', padding: '32px' }}>
         <div className="dash-eyebrow" style={{ marginBottom: '10px' }}>
           <span className="dash-eyebrow-dot" />
           <span>THE SORTING CEREMONY • ACADEMY ENROLLMENT</span>
         </div>
 
-        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '26px', fontWeight: 800, margin: '4px 0 8px', color: '#f7f4e9' }}>
+        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '26px', fontWeight: 800, margin: '4px 0 8px', color: 'var(--text-main)' }}>
           Welcome to the Arcane Academy
         </h1>
-        <p style={{ color: '#8fa394', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
           Before taking your seat in the Grand Hall, inscribe your wizard moniker and step forward to be sorted into your House.
         </p>
 
         <form onSubmit={handleComplete} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '24px' }}>
           <div>
-            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '6px' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '6px' }}>
               WIZARD MONIKER
             </label>
             <input
@@ -310,9 +321,9 @@ export function OnboardingScreen() {
                 height: '42px',
                 padding: '0 12px',
                 borderRadius: '6px',
-                border: '1px solid rgba(188, 222, 196, 0.2)',
-                background: '#0d1211',
-                color: '#f7f4e9',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-editor)',
+                color: 'var(--text-main)',
                 fontFamily: 'Manrope, sans-serif',
                 fontSize: '13px',
                 outline: 'none'
@@ -321,7 +332,7 @@ export function OnboardingScreen() {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
               CHOOSE YOUR HOUSE
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
@@ -335,20 +346,21 @@ export function OnboardingScreen() {
                       cursor: 'pointer',
                       padding: '12px 14px',
                       borderRadius: '8px',
-                      border: `1px solid ${isSelected ? h.color : 'rgba(188, 222, 196, 0.14)'}`,
-                      background: isSelected ? `${h.color}15` : '#141c19',
+                      border: `1px solid ${isSelected ? h.color : 'var(--border-subtle)'}`,
+                      background: isSelected ? `${h.color}1c` : 'var(--bg-surface-elevated)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                      transition: '0.2s'
+                      boxShadow: isSelected ? `0 0 16px ${h.color}33` : 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     <span style={{ fontSize: '24px' }}>{h.crest}</span>
                     <div>
-                      <strong style={{ display: 'block', color: isSelected ? '#f7f4e9' : '#cfd8d2', fontSize: '13px' }}>
+                      <strong style={{ display: 'block', color: isSelected ? '#ffffff' : 'var(--text-muted)', fontSize: '13px' }}>
                         {h.name}
                       </strong>
-                      <span style={{ display: 'block', color: isSelected ? h.color : '#798a7e', fontSize: '10px' }}>
+                      <span style={{ display: 'block', color: isSelected ? h.color : 'var(--text-dim)', fontSize: '10px' }}>
                         {h.trait}
                       </span>
                     </div>
@@ -359,7 +371,7 @@ export function OnboardingScreen() {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#8fa394', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.8px', marginBottom: '8px' }}>
               PREFERRED DIALECT (LANGUAGE)
             </label>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -370,9 +382,9 @@ export function OnboardingScreen() {
                   flex: 1,
                   height: '36px',
                   borderRadius: '6px',
-                  border: `1px solid ${language === 'EN' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
-                  background: language === 'EN' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
-                  color: language === 'EN' ? '#92e2b0' : '#8fa394',
+                  border: `1px solid ${language === 'EN' ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                  background: language === 'EN' ? 'var(--accent-primary-dim)' : 'var(--bg-surface-elevated)',
+                  color: language === 'EN' ? 'var(--accent-primary)' : 'var(--text-muted)',
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer'
@@ -387,9 +399,9 @@ export function OnboardingScreen() {
                   flex: 1,
                   height: '36px',
                   borderRadius: '6px',
-                  border: `1px solid ${language === 'HI' ? '#92e2b0' : 'rgba(188, 222, 196, 0.14)'}`,
-                  background: language === 'HI' ? 'rgba(146, 226, 176, 0.12)' : '#141c19',
-                  color: language === 'HI' ? '#92e2b0' : '#8fa394',
+                  border: `1px solid ${language === 'HI' ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                  background: language === 'HI' ? 'var(--accent-primary-dim)' : 'var(--bg-surface-elevated)',
+                  color: language === 'HI' ? 'var(--accent-primary)' : 'var(--text-muted)',
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer'
@@ -404,7 +416,12 @@ export function OnboardingScreen() {
             type="submit"
             disabled={submitting || !name.trim()}
             className="button button-primary"
-            style={{ width: '100%', height: '44px', fontSize: '12px', marginTop: '8px' }}
+            style={{
+              width: '100%',
+              height: '44px',
+              fontSize: '12px',
+              marginTop: '8px'
+            }}
           >
             {submitting ? 'Sorting into House...' : 'Don the Sorting Hat & Enter Academy'} <ArrowRight size={15} />
           </button>
