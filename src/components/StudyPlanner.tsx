@@ -10,7 +10,6 @@ import {
   Plus,
   RotateCcw,
   ShieldAlert,
-  Sparkles,
   Trash2,
   AlertTriangle
 } from 'lucide-react'
@@ -67,19 +66,19 @@ export function StudyPlanner({
   onEarnXp
 }: {
   language: Language
-  onEarnXp: (amount?: number) => void
+  onEarnXp?: (amount?: number) => void
 }) {
   const isHi = language === 'HI'
 
   // Calendar States
-  const [selectedDay, setSelectedDay] = useState<number>(1) // Tuesday index
+  const [selectedDay, setSelectedDay] = useState<number>(1)
   const [tasks, setTasks] = useState<TaskItem[]>(initialTasks)
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskTime, setNewTaskTime] = useState('11:00 AM')
+  const [newTaskTime] = useState('11:00 AM')
 
   // Focus Timer States
-  const [selectedDuration, setSelectedDuration] = useState<number>(25) // minutes
+  const [selectedDuration, setSelectedDuration] = useState<number>(25)
   const [timeLeft, setTimeLeft] = useState<number>(25 * 60)
   const [isActive, setIsActive] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -134,7 +133,7 @@ export function StudyPlanner({
       if (timerRef.current) clearInterval(timerRef.current)
 
       const reward = distractions === 0 ? 50 : 25
-      onEarnXp(reward)
+      onEarnXp?.(reward)
       alert(
         isHi
           ? `Shaabash! Focus session pura hua! +${reward} XP mile.`
